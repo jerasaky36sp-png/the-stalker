@@ -5,13 +5,15 @@ import com.stalkermod.entity.ai.ChaseGoal;
 import com.stalkermod.entity.ai.DisappearGoal;
 import com.stalkermod.entity.ai.ObserveGoal;
 import com.stalkermod.entity.ai.StalkGoal;
+import com.stalkermod.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -74,6 +76,9 @@ public class StalkerEntity extends Monster {
             StalkerMod.LOGGER.debug("Stalker {} : {} -> {}", this.getId(), this.state, newState);
             this.state = newState;
             this.stateTicks = 0;
+            if (newState == StalkerState.CHASE && !this.level().isClientSide) {
+                this.onChaseStart();
+            }
         }
     }
 
@@ -119,15 +124,24 @@ public class StalkerEntity extends Monster {
         return view.dot(toMe) > 0.96D && player.hasLineOfSight(this);
     }
 
+    /** Chase-start cue: a sound at the player and a short darkness pulse. */
+    private void onChaseStart() {
+        if (!hasValidFocus()) {
+            return;
+        }
+        this.level().playSound(null, focus.getX(), focus.getY(), focus.getZ(),
+                ModSounds.CHASE_START.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
+        focus.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, false, false));
+    }
+
     /** Plays the vanish sound + particles once, so a restarted goal cannot repeat them. */
     public void playVanishEffects() {
         if (vanishEffectsPlayed) {
             return;
         }
         vanishEffectsPlayed = true;
-        // PLACEHOLDER sound (vanilla). Replace with a custom SoundEvent in the horror stage.
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 0.5F);
+                ModSounds.VANISH.get(), SoundSource.HOSTILE, 1.0F, 0.5F);
         if (this.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE,
                     this.getX(), this.getY() + 1.4D, this.getZ(), 40, 0.3D, 1.2D, 0.3D, 0.02D);

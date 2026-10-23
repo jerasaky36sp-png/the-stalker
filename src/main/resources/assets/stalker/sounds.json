@@ -1,0 +1,29 @@
+{
+  "footstep_behind": {
+    "sounds": [
+      { "name": "minecraft:block.gravel.step", "type": "event", "volume": 1.0, "pitch": 0.6 },
+      { "name": "minecraft:block.grass.step",  "type": "event", "volume": 1.0, "pitch": 0.6 }
+    ]
+  },
+  "whisper": {
+    "sounds": [
+      { "name": "minecraft:entity.vex.ambient", "type": "event", "volume": 0.6, "pitch": 0.5 },
+      { "name": "minecraft:ambient.cave",       "type": "event", "volume": 0.8, "pitch": 0.7 }
+    ]
+  },
+  "branch_snap": {
+    "sounds": [
+      { "name": "minecraft:block.wood.break", "type": "event", "volume": 1.0, "pitch": 1.4 }
+    ]
+  },
+  "chase_start": {
+    "sounds": [
+      { "name": "minecraft:entity.enderman.stare", "type": "event", "volume": 1.0, "pitch": 0.7 }
+    ]
+  },
+  "vanish": {
+    "sounds": [
+      { "name": "minecraft:entity.enderman.teleport", "type": "event", "volume": 1.0, "pitch": 0.5 }
+    ]
+  }
+}
