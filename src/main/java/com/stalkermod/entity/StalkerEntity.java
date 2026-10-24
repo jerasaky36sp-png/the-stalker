@@ -4,6 +4,7 @@ import com.stalkermod.StalkerMod;
 import com.stalkermod.entity.ai.ChaseGoal;
 import com.stalkermod.entity.ai.DisappearGoal;
 import com.stalkermod.entity.ai.ObserveGoal;
+import com.stalkermod.entity.ai.PeekGoal;
 import com.stalkermod.entity.ai.StalkGoal;
 import com.stalkermod.registry.ModSounds;
 import net.minecraft.core.BlockPos;
@@ -86,6 +87,7 @@ public class StalkerEntity extends Monster implements GeoEntity {
         this.goalSelector.addGoal(2, new ChaseGoal(this));
         this.goalSelector.addGoal(3, new StalkGoal(this));
         this.goalSelector.addGoal(4, new ObserveGoal(this));
+        this.goalSelector.addGoal(3, new PeekGoal(this));
     }
 
     @Override
@@ -109,6 +111,7 @@ public class StalkerEntity extends Monster implements GeoEntity {
     // ---------- GeckoLib animation ----------
 
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_stalker.idle");
+    private static final RawAnimation PEEK_ANIM = RawAnimation.begin().thenLoop("animation.the_stalker.peek");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_stalker.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.the_stalker.run");
     private static final RawAnimation VANISH = RawAnimation.begin().thenPlayAndHold("animation.the_stalker.vanish");
@@ -134,6 +137,9 @@ public class StalkerEntity extends Monster implements GeoEntity {
         StalkerState synced = this.getSyncedState();
         if (synced == StalkerState.DISAPPEAR) {
             return state.setAndContinue(VANISH);
+        }
+        if (synced == StalkerState.PEEK) {
+            return state.setAndContinue(PEEK_ANIM);
         }
         if (state.isMoving()) {
             return state.setAndContinue(synced == StalkerState.CHASE ? RUN : WALK);
@@ -212,6 +218,18 @@ public class StalkerEntity extends Monster implements GeoEntity {
         return view.dot(toMe) > 0.96D && player.hasLineOfSight(this);
     }
 
+    /** Like isPlayerLookingAtMe, but ignores walls/glass (used when peeking through a window). */
+    public boolean isPlayerLookingAtMeThroughGlass(Player player) {
+        if (this.distanceTo(player) > 14.0F) {
+            return false;
+        }
+        Vec3 view = player.getViewVector(1.0F).normalize();
+        Vec3 toMe = new Vec3(this.getX() - player.getX(),
+                this.getEyeY() - player.getEyeY(),
+                this.getZ() - player.getZ()).normalize();
+        return view.dot(toMe) > 0.96D;
+    }
+
     /** Chase-start cue: a sound at the player and a short darkness pulse. */
     private void onChaseStart() {
         if (skipNextChaseCue) {
@@ -288,7 +306,8 @@ public class StalkerEntity extends Monster implements GeoEntity {
     @Nullable
     @Override
     protected SoundEvent getAmbientSound() {
-        return (this.state == StalkerState.OBSERVE || this.state == StalkerState.STALK)
+        return (this.state == StalkerState.OBSERVE || this.state == StalkerState.STALK
+                || this.state == StalkerState.PEEK)
                 ? ModSounds.BREATH.get() : null;
     }
 
@@ -302,7 +321,7 @@ public class StalkerEntity extends Monster implements GeoEntity {
 
     @Override
     protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
-        return 2.45F;
+        return 2.85F;
     }
 
     @Override

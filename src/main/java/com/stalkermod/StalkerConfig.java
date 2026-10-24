@@ -8,6 +8,7 @@ public class StalkerConfig {
     public static final ForgeConfigSpec.BooleanValue STALKER_APPEARANCES;
     public static final ForgeConfigSpec.IntValue MIN_INTERVAL_SECONDS;
     public static final ForgeConfigSpec.IntValue MAX_INTERVAL_SECONDS;
+    public static final ForgeConfigSpec.BooleanValue HOUSE_EVENTS_ENABLED;
     public static final ForgeConfigSpec.BooleanValue JUMPSCARE_ENABLED;
     public static final ForgeConfigSpec.IntValue JUMPSCARE_COOLDOWN_SECONDS;
 
@@ -22,6 +23,8 @@ public class StalkerConfig {
                 .defineInRange("minIntervalSeconds", 30, 5, 3600);
         MAX_INTERVAL_SECONDS = b.comment("Maximum seconds between horror events per player.")
                 .defineInRange("maxIntervalSeconds", 90, 10, 7200);
+        HOUSE_EVENTS_ENABLED = b.comment("At night, if you are indoors near a door: knocking, scratching, and The Stalker peering through your windows.")
+                .define("houseEventsEnabled", true);
         JUMPSCARE_ENABLED = b.comment("Allow The Stalker to jumpscare (teleports in front of you, snaps your view, loud scream).")
                 .define("jumpscareEnabled", true);
         JUMPSCARE_COOLDOWN_SECONDS = b.comment("Minimum seconds between jumpscares for the same player.")

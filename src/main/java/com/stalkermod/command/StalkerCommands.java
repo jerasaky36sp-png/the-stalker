@@ -11,10 +11,10 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** /stalker event <footsteps|whisper|branch|appear|jumpscare>  (op level 2) - for testing. */
+/** /stalker event <footsteps|whisper|branch|appear|jumpscare|haunt|knock|peek>  (op level 2) - for testing. */
 @Mod.EventBusSubscriber(modid = StalkerMod.MOD_ID)
 public class StalkerCommands {
-    private static final String[] TYPES = {"footsteps", "whisper", "branch", "appear", "jumpscare"};
+    private static final String[] TYPES = {"footsteps", "whisper", "branch", "appear", "jumpscare", "haunt", "knock", "peek"};
 
     @SubscribeEvent
     public static void onRegister(RegisterCommandsEvent event) {
@@ -28,7 +28,7 @@ public class StalkerCommands {
                                             String type = StringArgumentType.getString(ctx, "type");
                                             boolean ok = HorrorEvents.trigger(player.serverLevel(), player, type);
                                             ctx.getSource().sendSuccess(() -> Component.literal(
-                                                    ok ? "Triggered: " + type : "Failed / unknown event: " + type), false);
+                                                    ok ? "Triggered: " + type : "Failed: unknown event, or no door/window/tree spot found nearby: " + type), false);
                                             return ok ? 1 : 0;
                                         }))));
     }

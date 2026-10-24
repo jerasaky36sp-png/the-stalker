@@ -49,6 +49,15 @@ public final class Jumpscare {
         return true;
     }
 
+    /** Shows the jumpscare only if the config + cooldown allow it. */
+    public static boolean showIfAllowed(ServerPlayer player) {
+        if (!canTrigger(player)) {
+            return false;
+        }
+        show(player);
+        return true;
+    }
+
     /** Picture + scream + darkness for one player. Does not need a Stalker. */
     public static void show(ServerPlayer player) {
         StalkerNetwork.sendJumpscare(player);

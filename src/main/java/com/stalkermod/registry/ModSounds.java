@@ -19,6 +19,11 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> JUMPSCARE = register("jumpscare");
     public static final RegistryObject<SoundEvent> HEARTBEAT = register("heartbeat");
     public static final RegistryObject<SoundEvent> BREATH = register("breath");
+    public static final RegistryObject<SoundEvent> KNOCK = register("knock");
+    public static final RegistryObject<SoundEvent> POUND = register("pound");
+    public static final RegistryObject<SoundEvent> SCRATCH = register("scratch");
+    public static final RegistryObject<SoundEvent> GLASS_TAP = register("glass_tap");
+    public static final RegistryObject<SoundEvent> DOOR_CREAK = register("door_creak");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name,

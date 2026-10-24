@@ -12,11 +12,11 @@ public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, StalkerMod.MOD_ID);
 
-    // ID: stalker:the_stalker  | hitbox 0.6 wide x 2.7 tall
+    // ID: stalker:the_stalker  | hitbox 0.6 wide x 3.0 tall (model is 48 px = 3 blocks)
     public static final RegistryObject<EntityType<StalkerEntity>> THE_STALKER =
             ENTITIES.register("the_stalker", () ->
                     EntityType.Builder.of(StalkerEntity::new, MobCategory.MONSTER)
-                            .sized(0.6F, 2.7F)
+                            .sized(0.6F, 3.0F)
                             .clientTrackingRange(10)
                             .build("the_stalker"));
 }
