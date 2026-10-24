@@ -10,7 +10,7 @@ import java.util.EnumSet;
 
 /** CHASE: run at the player with vanilla pathfinding, melee when in reach, give up when far/late. */
 public class ChaseGoal extends Goal {
-    private static final double SPEED = 1.4D;
+    private static final double SPEED = 1.5D;
     private static final double REACH_SQR = 2.6D * 2.6D;
     private static final int MAX_CHASE_TICKS = 600; // 30 s
 
@@ -41,7 +41,7 @@ public class ChaseGoal extends Goal {
     @Override
     public void start() {
         repathTicks = 0;
-        attackCooldown = 10;
+        attackCooldown = 20;
         stalker.setTarget(stalker.getFocus());
     }
 

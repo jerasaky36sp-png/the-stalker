@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -60,6 +61,8 @@ public class StalkerEntity extends Monster implements GeoEntity {
     private int stateTicks;
     private int noPlayerTicks;
     private boolean vanishEffectsPlayed;
+    private int heartbeatCooldown;
+    private boolean skipNextChaseCue;
     @Nullable
     private Player focus;
 
@@ -72,7 +75,7 @@ public class StalkerEntity extends Monster implements GeoEntity {
         return Monster.createMonsterAttributes()
                 .add(Attributes.MAX_HEALTH, 40.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.28D)
-                .add(Attributes.ATTACK_DAMAGE, 6.0D)
+                .add(Attributes.ATTACK_DAMAGE, 8.0D)
                 .add(Attributes.FOLLOW_RANGE, 64.0D);
     }
 
@@ -184,6 +187,7 @@ public class StalkerEntity extends Monster implements GeoEntity {
         if (this.state == StalkerState.DISAPPEAR) {
             this.entityData.set(DATA_VANISH, Math.min(this.stateTicks, 20));
         }
+        this.tickHeartbeat();
 
         if (this.tickCount % 10 == 0) {
             this.focus = this.level().getNearestPlayer(
@@ -210,6 +214,10 @@ public class StalkerEntity extends Monster implements GeoEntity {
 
     /** Chase-start cue: a sound at the player and a short darkness pulse. */
     private void onChaseStart() {
+        if (skipNextChaseCue) {
+            skipNextChaseCue = false;
+            return;
+        }
         if (!hasValidFocus()) {
             return;
         }
@@ -251,6 +259,43 @@ public class StalkerEntity extends Monster implements GeoEntity {
             return false;
         }
         return Mob.checkMobSpawnRules(type, level, reason, pos, random);
+    }
+
+    /** Used by the jumpscare, which plays its own sound instead of the chase cue. */
+    public void setSkipNextChaseCue() {
+        this.skipNextChaseCue = true;
+    }
+
+    /** Heartbeat for the targeted player: faster and louder the closer the Stalker is. */
+    private void tickHeartbeat() {
+        if (!hasValidFocus() || this.state == StalkerState.DISAPPEAR) {
+            return;
+        }
+        if (--heartbeatCooldown > 0) {
+            return;
+        }
+        double dist = this.distanceTo(focus);
+        if (dist > 28.0D) {
+            heartbeatCooldown = 20;
+            return;
+        }
+        float closeness = (float) (1.0D - dist / 28.0D);
+        this.level().playSound(null, focus.getX(), focus.getY(), focus.getZ(),
+                ModSounds.HEARTBEAT.get(), SoundSource.HOSTILE, 0.5F + closeness, 0.9F + closeness * 0.4F);
+        heartbeatCooldown = (int) Mth.clamp(dist * 3.0D, 22.0D, 80.0D);
+    }
+
+    @Nullable
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return (this.state == StalkerState.OBSERVE || this.state == StalkerState.STALK)
+                ? ModSounds.BREATH.get() : null;
+    }
+
+    @Nullable
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ModSounds.VANISH.get();
     }
 
     // ---------- misc ----------

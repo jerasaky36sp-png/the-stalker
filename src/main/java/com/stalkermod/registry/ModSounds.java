@@ -16,6 +16,9 @@ public class ModSounds {
     public static final RegistryObject<SoundEvent> BRANCH_SNAP = register("branch_snap");
     public static final RegistryObject<SoundEvent> CHASE_START = register("chase_start");
     public static final RegistryObject<SoundEvent> VANISH = register("vanish");
+    public static final RegistryObject<SoundEvent> JUMPSCARE = register("jumpscare");
+    public static final RegistryObject<SoundEvent> HEARTBEAT = register("heartbeat");
+    public static final RegistryObject<SoundEvent> BREATH = register("breath");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name,

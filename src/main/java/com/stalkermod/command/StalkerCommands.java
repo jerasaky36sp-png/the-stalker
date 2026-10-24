@@ -11,10 +11,10 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** /stalker event <footsteps|whisper|branch|appear>  (op level 2) - for testing. */
+/** /stalker event <footsteps|whisper|branch|appear|jumpscare>  (op level 2) - for testing. */
 @Mod.EventBusSubscriber(modid = StalkerMod.MOD_ID)
 public class StalkerCommands {
-    private static final String[] TYPES = {"footsteps", "whisper", "branch", "appear"};
+    private static final String[] TYPES = {"footsteps", "whisper", "branch", "appear", "jumpscare"};
 
     @SubscribeEvent
     public static void onRegister(RegisterCommandsEvent event) {

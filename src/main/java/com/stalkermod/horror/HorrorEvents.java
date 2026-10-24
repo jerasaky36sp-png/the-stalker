@@ -25,6 +25,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -111,6 +112,9 @@ public class HorrorEvents {
             case "appear" -> {
                 return appear(level, player);
             }
+            case "jumpscare" -> {
+                return jumpscareNow(level, player);
+            }
             default -> {
                 return false;
             }
@@ -147,22 +151,42 @@ public class HorrorEvents {
         if (!StalkerConfig.STALKER_APPEARANCES.get()) {
             return false;
         }
-        BlockPos p = player.blockPosition();
-        if (!level.getEntitiesOfClass(StalkerEntity.class, new AABB(p).inflate(96.0D)).isEmpty()) {
+        if (findNearbyStalker(level, player) != null) {
             return false; // never more than one near this player
         }
+        return spawnStalker(level, player) != null;
+    }
+
+    @Nullable
+    private static StalkerEntity findNearbyStalker(ServerLevel level, ServerPlayer player) {
+        List<StalkerEntity> list = level.getEntitiesOfClass(StalkerEntity.class,
+                new AABB(player.blockPosition()).inflate(96.0D));
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    @Nullable
+    private static StalkerEntity spawnStalker(ServerLevel level, ServerPlayer player) {
         BlockPos spot = StalkerSpots.findTreeSpawnSpot(level, level.random, player, 24.0D, 34.0D);
         if (spot == null) {
-            return false;
+            return null;
         }
         StalkerEntity stalker = ModEntities.THE_STALKER.get().create(level);
         if (stalker == null) {
-            return false;
+            return null;
         }
         stalker.moveTo(spot.getX() + 0.5D, spot.getY(), spot.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
         stalker.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.EVENT, null, null);
         level.addFreshEntity(stalker);
-        return true;
+        return stalker;
+    }
+
+    /** Test command: uses a nearby Stalker (or spawns one) and jumpscares immediately. */
+    private static boolean jumpscareNow(ServerLevel level, ServerPlayer player) {
+        StalkerEntity stalker = findNearbyStalker(level, player);
+        if (stalker == null) {
+            stalker = spawnStalker(level, player);
+        }
+        return stalker != null && Jumpscare.trigger(stalker, player, true);
     }
 
     // ---------- delayed sounds ----------
@@ -209,12 +233,14 @@ public class HorrorEvents {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         NEXT_EVENT.remove(id);
+        Jumpscare.clear(id);
         PENDING.removeIf(ps -> ps.playerId().equals(id));
     }
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent event) {
         NEXT_EVENT.clear();
+        Jumpscare.clearAll();
         PENDING.clear();
     }
 }

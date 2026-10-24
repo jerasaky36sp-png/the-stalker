@@ -1,29 +1,86 @@
 {
   "footstep_behind": {
     "sounds": [
-      { "name": "minecraft:block.gravel.step", "type": "event", "volume": 1.0, "pitch": 0.6 },
-      { "name": "minecraft:block.grass.step",  "type": "event", "volume": 1.0, "pitch": 0.6 }
+      {
+        "name": "stalker:footstep_behind_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:footstep_behind_2",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:footstep_behind_3",
+        "volume": 1.0
+      }
     ]
   },
   "whisper": {
     "sounds": [
-      { "name": "minecraft:entity.vex.ambient", "type": "event", "volume": 0.6, "pitch": 0.5 },
-      { "name": "minecraft:ambient.cave",       "type": "event", "volume": 0.8, "pitch": 0.7 }
+      {
+        "name": "stalker:whisper_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:whisper_2",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:whisper_3",
+        "volume": 1.0
+      }
     ]
   },
   "branch_snap": {
     "sounds": [
-      { "name": "minecraft:block.wood.break", "type": "event", "volume": 1.0, "pitch": 1.4 }
+      {
+        "name": "stalker:branch_snap_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:branch_snap_2",
+        "volume": 1.0
+      }
     ]
   },
   "chase_start": {
     "sounds": [
-      { "name": "minecraft:entity.enderman.stare", "type": "event", "volume": 1.0, "pitch": 0.7 }
+      {
+        "name": "stalker:chase_start",
+        "volume": 1.0
+      }
     ]
   },
   "vanish": {
     "sounds": [
-      { "name": "minecraft:entity.enderman.teleport", "type": "event", "volume": 1.0, "pitch": 0.5 }
+      {
+        "name": "stalker:vanish",
+        "volume": 1.0
+      }
+    ]
+  },
+  "jumpscare": {
+    "sounds": [
+      {
+        "name": "stalker:jumpscare",
+        "volume": 1.0
+      }
+    ]
+  },
+  "heartbeat": {
+    "sounds": [
+      {
+        "name": "stalker:heartbeat",
+        "volume": 1.0
+      }
+    ]
+  },
+  "breath": {
+    "sounds": [
+      {
+        "name": "stalker:breath",
+        "volume": 0.8
+      }
     ]
   }
 }

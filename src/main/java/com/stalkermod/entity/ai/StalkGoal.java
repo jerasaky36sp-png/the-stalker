@@ -2,7 +2,9 @@ package com.stalkermod.entity.ai;
 
 import com.stalkermod.entity.StalkerEntity;
 import com.stalkermod.entity.StalkerState;
+import com.stalkermod.horror.Jumpscare;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 
@@ -67,8 +69,11 @@ public class StalkGoal extends Goal {
             stalker.getLookControl().setLookAt(p, 30.0F, 30.0F);
             seenTicks++;
             if (seenTicks > WATCHED_LIMIT) {
-                stalker.setState(stalker.getRandom().nextFloat() < 0.35F
-                        ? StalkerState.CHASE : StalkerState.DISAPPEAR);
+                float roll = stalker.getRandom().nextFloat();
+                if (roll < 0.30F && p instanceof ServerPlayer sp && Jumpscare.trigger(stalker, sp, false)) {
+                    return; // jumpscare succeeded (it also starts the chase)
+                }
+                stalker.setState(roll < 0.55F ? StalkerState.CHASE : StalkerState.DISAPPEAR);
             }
             return;
         }
