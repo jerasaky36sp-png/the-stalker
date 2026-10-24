@@ -180,13 +180,14 @@ public class HorrorEvents {
         return stalker;
     }
 
-    /** Test command: uses a nearby Stalker (or spawns one) and jumpscares immediately. */
+    /** Test command: if a Stalker is near it chases afterwards, otherwise just the picture + scream. */
     private static boolean jumpscareNow(ServerLevel level, ServerPlayer player) {
         StalkerEntity stalker = findNearbyStalker(level, player);
-        if (stalker == null) {
-            stalker = spawnStalker(level, player);
+        if (stalker != null) {
+            return Jumpscare.trigger(stalker, player, true);
         }
-        return stalker != null && Jumpscare.trigger(stalker, player, true);
+        Jumpscare.show(player);
+        return true;
     }
 
     // ---------- delayed sounds ----------
