@@ -69,6 +69,7 @@ public class ChaseGoal extends Goal {
         }
         if (attackCooldown == 0 && stalker.distanceToSqr(p) <= REACH_SQR) {
             stalker.swing(InteractionHand.MAIN_HAND);
+            stalker.playAttackAnimation();
             stalker.doHurtTarget(p);
             attackCooldown = 20;
         }

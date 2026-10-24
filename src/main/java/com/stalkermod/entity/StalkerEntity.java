@@ -9,8 +9,12 @@ import com.stalkermod.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -30,11 +34,27 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.Animation;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
 import javax.annotation.Nullable;
 
-public class StalkerEntity extends Monster {
+public class StalkerEntity extends Monster implements GeoEntity {
 
     public static final double CHASE_GIVE_UP_DISTANCE = 40.0D;
+
+    /** Synced to clients so the renderer can animate by state. */
+    private static final EntityDataAccessor<Integer> DATA_STATE =
+            SynchedEntityData.defineId(StalkerEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_VANISH =
+            SynchedEntityData.defineId(StalkerEntity.class, EntityDataSerializers.INT);
 
     private StalkerState state = StalkerState.OBSERVE;
     private int stateTicks;
@@ -65,6 +85,66 @@ public class StalkerEntity extends Monster {
         this.goalSelector.addGoal(4, new ObserveGoal(this));
     }
 
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_STATE, 0);
+        this.entityData.define(DATA_VANISH, 0);
+    }
+
+    /** Safe on both sides; clients read the synced value. */
+    public StalkerState getSyncedState() {
+        StalkerState[] all = StalkerState.values();
+        return all[Mth.clamp(this.entityData.get(DATA_STATE), 0, all.length - 1)];
+    }
+
+    /** 0 normally, 1..20 while vanishing (drives the collapse animation). */
+    public int getVanishTicks() {
+        return this.entityData.get(DATA_VANISH);
+    }
+
+    // ---------- GeckoLib animation ----------
+
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.the_stalker.idle");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.the_stalker.walk");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.the_stalker.run");
+    private static final RawAnimation VANISH = RawAnimation.begin().thenPlayAndHold("animation.the_stalker.vanish");
+    private static final RawAnimation ATTACK =
+            RawAnimation.begin().then("animation.the_stalker.attack", Animation.LoopType.PLAY_ONCE);
+
+    private final AnimatableInstanceCache animCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animCache;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<StalkerEntity>(this, "main", 5, this::mainPredicate));
+        // registered last so the attack swing overrides the arms of the main animation
+        controllers.add(new AnimationController<StalkerEntity>(this, "attack", 0, state -> PlayState.STOP)
+                .triggerableAnim("attack", ATTACK));
+    }
+
+    private PlayState mainPredicate(AnimationState<StalkerEntity> state) {
+        StalkerState synced = this.getSyncedState();
+        if (synced == StalkerState.DISAPPEAR) {
+            return state.setAndContinue(VANISH);
+        }
+        if (state.isMoving()) {
+            return state.setAndContinue(synced == StalkerState.CHASE ? RUN : WALK);
+        }
+        return state.setAndContinue(IDLE);
+    }
+
+    /** Server side: tells all tracking clients to play the attack swing once. */
+    public void playAttackAnimation() {
+        if (!this.level().isClientSide) {
+            this.triggerAnim("attack", "attack");
+        }
+    }
+
     // ---------- state ----------
 
     public StalkerState getState() {
@@ -76,6 +156,7 @@ public class StalkerEntity extends Monster {
             StalkerMod.LOGGER.debug("Stalker {} : {} -> {}", this.getId(), this.state, newState);
             this.state = newState;
             this.stateTicks = 0;
+            this.entityData.set(DATA_STATE, newState.ordinal());
             if (newState == StalkerState.CHASE && !this.level().isClientSide) {
                 this.onChaseStart();
             }
@@ -100,6 +181,9 @@ public class StalkerEntity extends Monster {
     protected void customServerAiStep() {
         super.customServerAiStep();
         this.stateTicks++;
+        if (this.state == StalkerState.DISAPPEAR) {
+            this.entityData.set(DATA_VANISH, Math.min(this.stateTicks, 20));
+        }
 
         if (this.tickCount % 10 == 0) {
             this.focus = this.level().getNearestPlayer(
@@ -192,5 +276,6 @@ public class StalkerEntity extends Monster {
                 this.state = StalkerState.OBSERVE;
             }
         }
+        this.entityData.set(DATA_STATE, this.state.ordinal());
     }
 }
