@@ -82,5 +82,57 @@
         "volume": 0.8
       }
     ]
+  },
+  "knock": {
+    "sounds": [
+      {
+        "name": "stalker:knock_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:knock_2",
+        "volume": 1.0
+      }
+    ]
+  },
+  "pound": {
+    "sounds": [
+      {
+        "name": "stalker:pound_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:pound_2",
+        "volume": 1.0
+      }
+    ]
+  },
+  "scratch": {
+    "sounds": [
+      {
+        "name": "stalker:scratch",
+        "volume": 1.0
+      }
+    ]
+  },
+  "glass_tap": {
+    "sounds": [
+      {
+        "name": "stalker:glass_tap_1",
+        "volume": 1.0
+      },
+      {
+        "name": "stalker:glass_tap_2",
+        "volume": 1.0
+      }
+    ]
+  },
+  "door_creak": {
+    "sounds": [
+      {
+        "name": "stalker:door_creak",
+        "volume": 1.0
+      }
+    ]
   }
 }
